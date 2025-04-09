@@ -18,11 +18,11 @@ const {
 } = require("./middlewares");
 
 const app = express();
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8001;
 
 mongoose
-  .connect('mongodb://localhost:27017/Dashboard')
-  .then((e) => console.log("MongoDB Connected"))
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.error("MongoDB Connection Error:", err));
 
 app.set("view engine", "ejs");
