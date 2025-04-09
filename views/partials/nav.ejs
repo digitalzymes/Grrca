@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+
+        /* Sidebar styling */
+        .sidebar {
+            width: 250px;
+            background-color: #FFFFFF;
+            color: white;
+            padding: 20px;
+            height: 100vh;
+            z-index: 1000;
+        }
+
+        .sidebar .brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: rgb(9, 0, 0);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 40px;
+            padding: 15px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            cursor: default;
+        }
+
+        /* Remove hover effect specifically for brand */
+        .sidebar .brand:hover {
+            background-color: #f5f5f5;
+        }
+
+        .sidebar .user-name {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #060000;
+            border-radius: 5px;
+        }
+
+        .sidebar a {
+            color: rgb(6, 0, 0);
+            text-decoration: none;
+            display: block;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        /* Hover effect applies only to non-brand links */
+        .sidebar a:not(.brand):hover {
+            background-color: #eab374;
+        }
+
+        .main-content {
+            margin-left: 300px; /* Changed from margin-left to margin-right */
+            flex-grow: 1;
+            padding: 20px;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+                transform: translateX(100%); /* Changed to positive to slide in from the right */
+                transition: transform 0.3s ease-in-out;
+            }
+
+            .sidebar.active {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-right: 0; /* Reset margin for mobile */
+            }
+
+            .toggle-btn {
+                position: fixed;
+                top: 10px;
+                right: 10px; /* Changed from left to right */
+                z-index: 1001;
+                background-color: #6ae0af;
+                color: white;
+                border: none;
+                padding: 5px 10px;
+                border-radius: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="/" class="brand">Raj Raghunath and Co.</a>
+        <a href="/">Home</a>
+        <% if (locals.user) { %>
+            <a href="/blog/add-new">Add Blog</a>
+            
+            <a href="/user/logout">Logout</a>
+        <% } else { %>
+            <a href="/user/signup">Create Account</a>
+            <a href="/user/signin">Signin</a>
+        <% } %>
+    </div>
+
+    <!-- Main content -->
+    <div class="main-content">
+        <button class="toggle-btn d-md-none">☰</button>
+        
+        <% if (locals.error) { %>
+            < class="container mt-4">
+                <div class="alert alert-danger" role="alert"><%= locals.error %></div>
+            </div>
+        <% } %>
+        <!-- Your page content goes here -->
+    </div>
+
+    <script>
+        const toggleBtn = document.querySelector('.toggle-btn');
+        const sidebar = document.querySelector('.sidebar');
+
+        toggleBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

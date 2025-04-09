@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('./partials/head') %>
+    <title>Add New Blog</title>
+    <style>
+      body {
+        background: linear-gradient(45deg, #e0e0e0 0%, #979a9b 50%, #8e9193 100%);
+        min-height: 100vh;
+        width: 100vw;
+        padding: 0;
+        margin: 0;
+        font-family: 'Arial', sans-serif;
+      }
+      .wrapper {
+        display: flex;
+        min-height: 100vh;
+        flex-direction: column; /* Default to column on mobile */
+      }
+      nav {
+        width: 250px;
+        position: fixed;
+        height: 100vh;
+        background: #f8f9fa;
+        padding: 20px;
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease; /* Smooth transition for mobile menu */
+      }
+      .main-content {
+        flex: 1;
+        margin-left: 250px; /* Match nav width for desktop */
+        padding: 20px;
+        transition: margin-left 0.3s ease;
+      }
+      .add-container {
+        background: rgba(255, 255, 255, 0.95);
+        border-radius: 25px;
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+        padding: 2rem; /* Reduced padding for mobile */
+        max-width: 900px;
+        width: 100%;
+        margin: 20px auto; /* Adjusted margin for mobile */
+        animation: fadeIn 0.5s ease-in;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      h1 {
+        color: #6b48ff;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 1.5rem; /* Reduced margin for mobile */
+        text-shadow: 2px 2px 8px rgba(107, 72, 255, 0.2);
+        font-size: 1.5rem; /* Reduced font size for mobile */
+      }
+      .form-label {
+        color: #333;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        font-size: 1rem; /* Adjusted for mobile */
+      }
+      .form-control, .form-control-file {
+        border-radius: 15px;
+        border: 1px solid #e0e0e0;
+        padding: 10px; /* Reduced padding for mobile */
+        font-size: 1rem; /* Adjusted for mobile */
+        width: 100%; /* Ensure full width on mobile */
+      }
+      .form-control:focus {
+        border-color: #00ddeb;
+        box-shadow: 0 0 12px rgba(0, 221, 235, 0.3);
+      }
+      textarea.form-control {
+        min-height: 150px; /* Reduced height for mobile */
+        resize: vertical;
+      }
+      .btn-primary {
+        background: #6b48ff;
+        border: none;
+        border-radius: 30px;
+        padding: 10px 30px; /* Adjusted padding for mobile */
+        font-size: 1rem; /* Adjusted for mobile */
+        width: 100%; /* Full width on mobile */
+        transition: all 0.3s ease;
+      }
+      .btn-primary:hover {
+        background: #5639cc;
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(107, 72, 255, 0.4);
+      }
+      .btn-group {
+        display: flex;
+        justify-content: center;
+        margin-top: 1.5rem; /* Reduced margin for mobile */
+      }
+      .preview-image {
+        display: none;
+        max-width: 100%;
+        height: auto;
+        border-radius: 10px;
+        margin-top: 1rem;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+      }
+      .tox-tinymce {
+        border-radius: 15px !important;
+      }
+      /* Enhanced Mobile Responsiveness */
+      @media (max-width: 768px) {
+        .wrapper {
+          flex-direction: column;
+        }
+        nav {
+          position: absolute;
+          top: 0;
+          left: -250px; /* Hide off-screen by default */
+          z-index: 1000;
+          height: 100%;
+          transform: translateX(0); /* Initial state */
+        }
+        .nav-open nav {
+          transform: translateX(250px); /* Slide in when open */
+        }
+        .main-content {
+          margin-left: 0;
+          width: 100%;
+        }
+        .add-container {
+          margin: 10px;
+          padding: 1rem;
+        }
+        h1 {
+          font-size: 1.2rem;
+        }
+        .form-control, .form-control-file {
+          padding: 8px;
+        }
+        textarea.form-control {
+          min-height: 120px;
+        }
+        .btn-primary {
+          padding: 8px 20px;
+        }
+      }
+      /* Hamburger Menu for Mobile */
+      .menu-toggle {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1001;
+        font-size: 1.5rem;
+        background: #6b48ff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+      }
+      @media (max-width: 768px) {
+        .menu-toggle {
+          display: block;
+        }
+      }
+    </style>
+    <!-- Include TinyMCE CDN -->
+    <script src="https://cdn.tiny.cloud/1/3u04xmgjti9o8rf0c16ja37y8eba99qslojvenr8vmifqh8j/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+  </head>
+  <body>
+    <div class="wrapper">
+      <button class="menu-toggle" onclick="toggleNav()">☰</button>
+      <%- include('./partials/nav') %>
+      <div class="main-content">
+        <div class="add-container">
+          <h1>Create a New Blog</h1>
+          <form action="/blog" method="post" enctype="multipart/form-data" id="blogForm">
+            <div class="mb-4">
+              <label for="coverImage" class="form-label">Cover Image</label>
+              <input
+                type="file"
+                class="form-control form-control-file"
+                id="coverImage"
+                name="coverImage"
+                accept="image/*"
+                aria-describedby="coverImage"
+              />
+              <img id="imagePreview" class="preview-image" alt="Image preview">
+            </div>
+            <div class="mb-4">
+              <label for="title" class="form-label">Title</label>
+              <input
+                type="text"
+                class="form-control"
+                id="title"
+                name="title"
+                placeholder="Enter a captivating title"
+                aria-describedby="title"
+                required
+              />
+            </div>
+            <div class="mb-4">
+              <label for="body" class="form-label">Body</label>
+              <textarea
+                name="body"
+                class="form-control"
+                id="body"
+                placeholder="Share your story here..."
+              ></textarea>
+            </div>
+            <div class="btn-group">
+              <button type="submit" class="btn btn-primary">Publish Blog</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    <!-- Inline Scripts -->
+    <%- include('./partials/scripts.ejs') %>
+
+    <script>
+      // Image preview functionality
+      const coverImageInput = document.getElementById('coverImage');
+      const imagePreview = document.getElementById('imagePreview');
+
+      coverImageInput.addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            imagePreview.style.display = 'block';
+          };
+          reader.readAsDataURL(file);
+        } else {
+          imagePreview.style.display = 'none';
+        }
+      });
+
+      // Initialize TinyMCE editor
+      tinymce.init({
+        selector: '#body',
+        height: 200, /* Reduced height for mobile */
+        plugins: [
+          'advlist autolink lists link image charmap print preview anchor',
+          'searchreplace visualblocks code fullscreen',
+          'insertdatetime media table paste code help wordcount'
+        ],
+        toolbar: 'undo redo | formatselect | bold italic backcolor | \
+          alignleft aligncenter alignright alignjustify | \
+          bullist numlist outdent indent | removeformat | help',
+        content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+        mobile: {
+          theme: 'mobile',
+          plugins: 'autosave lists autolink'
+        }
+      });
+
+      // Sync TinyMCE content and handle form submission
+      const blogForm = document.getElementById('blogForm');
+      blogForm.addEventListener('submit', function(e) {
+        e.preventDefault(); // Prevent default submission for validation
+        tinymce.triggerSave(); // Sync TinyMCE content to textarea
+        const title = document.getElementById('title').value.trim();
+        const body = document.getElementById('body').value.trim();
+
+        // Validate fields
+        if (!title || !body) {
+          alert('Please fill in both the title and body fields.');
+          return;
+        }
+
+        console.log('Form Data - Title:', title, 'Body:', body); // Debug log
+        blogForm.submit(); // Submit the form if validation passes
+      });
+
+      // Mobile navigation toggle
+      function toggleNav() {
+        const wrapper = document.querySelector('.wrapper');
+        wrapper.classList.toggle('nav-open');
+      }
+    </script>
+  </body>
+</html>

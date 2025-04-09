@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <%- include('./partials/head') %>
+    <title>Edit Blog</title>
+    <style>
+        body {
+            background: linear-gradient(45deg, #e0e0e0 0%, #979a9b 50%, #8e9193 100%);
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        .edit-container {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            padding: 2.5rem;
+            max-width: 800px;
+            margin: 60px auto;
+            margin-left: 26rem;
+        }
+        h1 {
+            color: #333;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.1);
+        }
+        .form-label {
+            color: #444;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .form-control, .form-control-file {
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus {
+            border-color: #3633c2;
+            box-shadow: 0 0 10px rgba(253, 160, 133, 0.4);
+        }
+        textarea.form-control {
+            resize: vertical;
+            min-height: 150px;
+        }
+        .btn-success {
+            background: #28a745;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 30px;
+            transition: all 0.3s ease;
+        }
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 30px;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: #5a6268;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        .current-image {
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 1rem;
+            max-width: 100%;
+            height: auto;
+        }
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+    </style>
+<script src="https://cdn.tiny.cloud/1/3u04xmgjti9o8rf0c16ja37y8eba99qslojvenr8vmifqh8j/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+
+</head>
+<body>
+    <%- include('./partials/nav') %>
+
+    <div class="container edit-container">
+        <h1>Edit Your Blog</h1>
+        <form action="/blog/edit/<%= blog._id %>" method="POST" enctype="multipart/form-data">
+            <div class="mb-4">
+                <label for="title" class="form-label">Blog Title</label>
+                <input 
+                    type="text" 
+                    class="form-control" 
+                    id="title" 
+                    name="title" 
+                    value="<%= blog.title %>" 
+                    placeholder="Enter a catchy title" 
+                    required
+                >
+            </div>
+            <div class="mb-4">
+                <label for="body" class="form-label">Blog Content</label>
+                <textarea 
+                    class="form-control" 
+                    id="body" 
+                    name="body" 
+                    rows="6" 
+                    placeholder="Write your amazing content here..." 
+                    required
+                ><%= blog.body %></textarea>
+            </div>
+            <div class="mb-4">
+                <label for="coverImage" class="form-label">Cover Image (Optional)</label>
+                <input 
+                    type="file" 
+                    class="form-control form-control-file" 
+                    id="coverImage" 
+                    name="coverImage" 
+                    accept="image/*"
+                >
+                <img 
+                    src="<%= blog.coverImageURL %>" 
+                    width="250" 
+                    class="current-image" 
+                    alt="Current cover image"
+                >
+            </div>
+            <div class="btn-group">
+                <button type="submit" class="btn btn-success">Save Changes</button>
+                <a href="/blog/<%= blog._id %>" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <%- include('./partials/scripts') %>
+    <script>
+        // Image preview functionality
+        const coverImageInput = document.getElementById('coverImage');
+        const imagePreview = document.getElementById('imagePreview');
+  
+        coverImageInput.addEventListener('change', function() {
+          const file = this.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              imagePreview.src = e.target.result;
+              imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          } else {
+            imagePreview.style.display = 'none';
+          }
+        });
+  
+        // Initialize TinyMCE editor
+        tinymce.init({
+          selector: '#body',
+          height: 200, /* Reduced height for mobile */
+          plugins: [
+            'advlist autolink lists link image charmap print preview anchor',
+            'searchreplace visualblocks code fullscreen',
+            'insertdatetime media table paste code help wordcount'
+          ],
+          toolbar: 'undo redo | formatselect | bold italic backcolor | \
+            alignleft aligncenter alignright alignjustify | \
+            bullist numlist outdent indent | removeformat | help',
+          content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+          mobile: {
+            theme: 'mobile',
+            plugins: 'autosave lists autolink'
+          }
+        });
+  
+        // Sync TinyMCE content and handle form submission
+        const blogForm = document.getElementById('blogForm');
+        blogForm.addEventListener('submit', function(e) {
+          e.preventDefault(); // Prevent default submission for validation
+          tinymce.triggerSave(); // Sync TinyMCE content to textarea
+          const title = document.getElementById('title').value.trim();
+          const body = document.getElementById('body').value.trim();
+  
+          // Validate fields
+          if (!title || !body) {
+            alert('Please fill in both the title and body fields.');
+            return;
+          }
+  
+          console.log('Form Data - Title:', title, 'Body:', body); // Debug log
+          blogForm.submit(); // Submit the form if validation passes
+        });
+  
+        // Mobile navigation toggle
+        function toggleNav() {
+          const wrapper = document.querySelector('.wrapper');
+          wrapper.classList.toggle('nav-open');
+        }
+      </script>
+</body>
+</html>

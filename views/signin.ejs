@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('./partials/head') %>
+    <title>Sign In</title>
+    <style>
+      body {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      /* Modal Styling */
+      .modal-content {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 20px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+        border: none;
+        overflow: hidden;
+      }
+      .modal-header {
+        border-bottom: none;
+        padding: 20px 30px 0;
+        position: relative;
+      }
+      .modal-title {
+        color: #2a5298;
+        font-weight: 700;
+        font-size: 1.8rem;
+        text-align: center;
+        width: 100%;
+      }
+      .modal-body {
+        padding: 20px 30px;
+      }
+      .modal-footer {
+        padding: 10px 30px 20px;
+        justify-content: center;
+      }
+
+      /* Marquee Styling with Oscillating Animation */
+      .marquee-container {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 10px 0;
+        overflow: hidden;
+        position: relative;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .marquee-text {
+        display: inline-block;
+        white-space: nowrap;
+        color: #ffffff;
+        font-size: 1.1rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 5px 2px;
+        animation: oscillate 9s ease-in-out infinite alternate; /* Oscillates back and forth */
+      }
+      @keyframes oscillate {
+        0% {
+          transform: translateX(0); /* Start at left */
+        }
+        100% {
+          transform: translateX(calc(100%)); /* Move to right, adjust 300px to fit text */
+        }
+      }
+
+      /* Form Styling */
+      .form-control {
+        border-radius: 12px;
+        border: 1px solid #ced4da;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
+      }
+      .form-control:focus {
+        border-color: #2a5298;
+        box-shadow: 0 0 10px rgba(42, 82, 152, 0.4);
+        outline: none;
+      }
+      .form-label {
+        color: #333;
+        font-weight: 600;
+        font-size: 0.95rem;
+      }
+      .form-text {
+        color: #777;
+        font-size: 0.85rem;
+      }
+
+      /* Button Styling */
+      .btn-primary {
+        background: linear-gradient(90deg, #2a5298, #1e3c72);
+        border: none;
+        border-radius: 25px;
+        padding: 12px 35px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+      }
+      .btn-primary:hover {
+        background: linear-gradient(90deg, #1e3c72, #2a5298);
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(30, 60, 114, 0.4);
+      }
+
+      /* Footer Link */
+      .modal-footer a {
+        color: #2a5298;
+        font-weight: 600;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+      .modal-footer a:hover {
+        color: #1e3c72;
+        text-decoration: underline;
+      }
+
+      /* Modal Animation */
+      .modal-dialog {
+        animation: slideIn 0.5s ease-out;
+      }
+      @keyframes slideIn {
+        from {
+          transform: translateY(-50px);
+          opacity: 0;
+        }
+        to {
+          transform: translateY(0);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Modal -->
+    <div class="modal fade show d-block" id="signinModal" tabindex="-1" aria-labelledby="signinModalLabel" aria-hidden="true">
+      <div class="marquee-container">
+        <span class="marquee-text">
+          Welcome to Raj Raghunath and Co. - Your Trusted Partner
+        </span>
+      </div>
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="signinModalLabel">Welcome Back</h5>
+          </div>
+          <div class="modal-body">
+            <form action="/user/signin" method="post">
+              <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">Email Address</label>
+                <input
+                  type="email"
+                  name="email"
+                  class="form-control"
+                  id="exampleInputEmail1"
+                  aria-describedby="emailHelp"
+                  placeholder="Enter your email"
+                  required
+                />
+                <div id="emailHelp" class="form-text">
+                  We'll never share your email with anyone else.
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">Password</label>
+                <input
+                  name="password"
+                  type="password"
+                  class="form-control"
+                  id="exampleInputPassword1"
+                  placeholder="Enter your password"
+                  required
+                />
+              </div>
+              <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Sign In</button>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer border-0">
+            <small class="text-muted">
+              Don't have an account? 
+              <a href="/user/signup" class="text-primary">Sign Up</a>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <%- include('./partials/scripts') %>
+  </body>
+</html>

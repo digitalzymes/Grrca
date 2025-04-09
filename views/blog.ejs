@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <%- include('./partials/head') %>
+    <title>Blog | <%= blog.title %></title>
+    <style>
+      body {
+        font-family: "Poppins", sans-serif;
+        background-color: #f8f9fa;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .sidebar {
+        width: 250px;
+        background: #fff;
+        padding: 20px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+      }
+      .sidebar a {
+        display: block;
+        padding: 10px;
+        color: #333;
+        text-decoration: none;
+        font-size: 1rem;
+      }
+      .sidebar a:hover {
+        background-color: #f0f0f0;
+      }
+      .hamburger {
+        display: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        padding: 10px;
+        background: none;
+        border: none;
+        color: #333;
+      }
+      .container {
+        margin-left: 250px; /* Offset for sidebar */
+        padding: 20px;
+        flex: 1;
+      }
+      .blog-container {
+        max-width: 800px;
+        margin: 50px auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+      .blog-title {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #333;
+      }
+      .blog-image {
+        width: 100%;
+        border-radius: 8px;
+        margin: 15px 0;
+      }
+      .blog-body {
+        white-space: pre-wrap;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        color: #555;
+      }
+      .author-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+        padding: 10px;
+        border-top: 2px solid #ddd;
+      }
+      .author-info img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .author-name {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #444;
+      }
+
+      /* Mobile Responsive Styles */
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-250px);
+          z-index: 1000;
+        }
+        .sidebar.active {
+          transform: translateX(0);
+        }
+        .hamburger {
+          display: block;
+        }
+        .container {
+          margin-left: 0; /* Remove sidebar offset on mobile */
+          padding: 10px;
+        }
+        .blog-container {
+          margin: 20px;
+          padding: 15px;
+          border-radius: 8px;
+        }
+        .blog-title {
+          font-size: 1.5rem;
+        }
+        .blog-body {
+          font-size: 1rem;
+          line-height: 1.5;
+        }
+        .author-info {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 5px;
+          padding: 10px 0;
+        }
+        .author-info img {
+          width: 40px;
+          height: 40px;
+        }
+        .author-name {
+          font-size: 0.9rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .blog-container {
+          margin: 10px;
+          padding: 10px;
+        }
+        .blog-title {
+          font-size: 1.2rem;
+        }
+        .blog-body {
+          font-size: 0.9rem;
+          line-height: 1.4;
+        }
+        .author-info img {
+          width: 30px;
+          height: 30px;
+        }
+        .author-name {
+          font-size: 0.8rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <button class="hamburger">&#9776;</button> <!-- Hamburger menu button -->
+    <div class="sidebar">
+      <h2>Raj Raghunath and Co.</h2>
+      <a href="/">Home</a>
+      <a href="/blog/add-new">Add Blog</a>
+      <a href="/logout">Logout</a>
+    </div>
+
+    <div class="container">
+      <div class="blog-container">
+        <h1 class="blog-title"><%= blog.title %></h1>
+        <img src="<%= blog.coverImageURL %>" alt="Blog Cover" class="blog-image" />
+        <div class="blog-body"><%- blog.body %></div>
+        <div class="author-info">
+          <span class="author-name"><%= blog.createdBy.fullName %></span>
+        </div>
+      </div>
+    </div>
+
+    <%- include('./partials/scripts') %>
+    <script>
+      // JavaScript to toggle sidebar on mobile
+      const hamburger = document.querySelector('.hamburger');
+      const sidebar = document.querySelector('.sidebar');
+
+      hamburger.addEventListener('click', () => {
+        sidebar.classList.toggle('active');
+      });
+
+      // Optional: Close sidebar when clicking outside
+      document.addEventListener('click', (event) => {
+        if (!sidebar.contains(event.target) && !hamburger.contains(event.target)) {
+          sidebar.classList.remove('active');
+        }
+      });
+    </script>
+  </body>
+</html>
