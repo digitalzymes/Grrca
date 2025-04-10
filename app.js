@@ -1,5 +1,4 @@
 require("dotenv").config();
-
 const path = require("path");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -17,43 +16,39 @@ const {
 } = require("./middlewares");
 
 const app = express();
-const PORT = process.env.PORT || 8001;
+const PORT = process.env.PORT || 10000;
 
-// Attempt to create uploads directory, but don't fail if it doesn't work
-const uploadDir = path.resolve("./public/uploads/");
-const fs = require("fs"); // Explicitly require fs here
-if (!fs.existsSync(uploadDir)) {
-    try {
-        fs.mkdirSync(uploadDir, { recursive: true });
-        console.log("Uploads directory created successfully");
-    } catch (err) {
-        console.warn("Failed to create uploads directory:", err.message);
-        // Continue without directory if creation fails (e.g., Render restriction)
-    }
-}
-
+mongoose.set("strictQuery", false); // Suppress Mongoose warning
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
-  .catch((err) => console.error("MongoDB Connection Error:", err));
+  .catch((err) => {
+    console.error("MongoDB Connection Error:", err);
+    process.exit(1);
+  });
 
 app.set("view engine", "ejs");
 app.set("views", path.resolve("./views"));
 
 app.use(cors({ origin: "https://grrcaindia.com" }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.resolve("./public")));
 app.use(cookieParser());
 app.use(checkForAuthenticationCookie("token"));
 
-// Single root route with authentication and blog fetching
+// Single root route with authentication
 app.get("/admin", ensureAuthenticated, async (req, res) => {
-  const allBlogs = await Blog.find({});
-  res.render("home", {
-    user: req.user,
-    blogs: allBlogs,
-  });
+  try {
+    const allBlogs = await Blog.find({});
+    res.render("home", {
+      user: req.user,
+      blogs: allBlogs,
+    });
+  } catch (error) {
+    console.error("Error in /admin:", error);
+    res.status(500).send("Error loading admin page");
+  }
 });
 
 app.get("/", (req, res) => {
@@ -61,19 +56,16 @@ app.get("/", (req, res) => {
   res.redirect("/user/signin");
 });
 
-// Public API to fetch all blogs for frontend
+// Public APIs
 app.get("/api/blogs", async (req, res) => {
   try {
     const blogs = await Blog.find({}).sort({ createdAt: -1 });
-    console.log("Fetched blogs:", blogs);
     res.json(blogs);
   } catch (error) {
-    console.error("Error in /api/blogs:", error);
     res.status(500).json({ message: "Error fetching blogs" });
   }
 });
 
-// Public API to fetch a single blog by ID
 app.get("/api/blogs/:id", async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id).populate("createdBy");
@@ -89,7 +81,6 @@ app.use("/blog", blogRoute);
 
 app.use(errorHandler);
 
-// Catch-all route for debugging
 app.use((req, res) => {
   res.status(404).send("Page not found");
 });
