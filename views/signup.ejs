@@ -151,6 +151,12 @@
             <h5 class="modal-title" id="signupModalLabel">Create an Account</h5>
           </div>
           <div class="modal-body">
+            <% if (typeof error !== "undefined") { %>
+              <div class="alert alert-danger text-center">
+                <%= error %>
+              </div>
+            <% } %>
+            
             <form action="/user/signup" method="POST">
               <div class="mb-3">
                 <label for="fullName" class="form-label">Full Name</label>

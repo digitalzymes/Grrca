@@ -27,12 +27,23 @@ router.post("/signin", async (req, res) => {
 // In /user/signup POST
 router.post("/signup", async (req, res) => {
   const { fullName, email, password } = req.body;
-  await User.create({ 
-    fullName, 
-    email, 
-    password });
-  return res.redirect("/admin"); // Changed from "/"
+
+  try {
+    await User.create({ fullName, email, password });
+    return res.redirect("/admin");
+  } catch (error) {
+    if (error.code === 11000 && error.keyPattern?.email) {
+      return res.render("signup", { error: "Email already in use." });
+    }
+    console.error("Signup error:", error);
+    return res.render("signup", {
+      error: "Something went wrong. Please try again.",
+    });
+  }
 });
+
+
+
 
 // In /user/logout
 router.get("/logout", (req, res) => {
