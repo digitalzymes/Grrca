@@ -1,7 +1,7 @@
 const { Router } = require("express");
-// const multer = require("multer"); // Temporarily commented out
+// const multer = require("multer"); // Commented out
 const path = require("path");
-// const fs = require("fs"); // Temporarily commented out
+// const fs = require("fs"); // Commented out
 
 const Blog = require("../models/blog");
 const { ensureAuthenticated } = require("../middlewares");
@@ -41,7 +41,9 @@ router.get("/add-new", (req, res) => {
 // View Blog Details
 router.get("/:id", async (req, res) => {
   try {
+    console.log("Fetching blog with ID:", req.params.id);
     const blog = await Blog.findById(req.params.id).populate("createdBy");
+    console.log("Blog fetched:", blog);
     if (!blog) {
       return res.status(404).send("Blog not found");
     }
@@ -52,42 +54,61 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => { // Removed upload.single
+router.post("/", async (req, res) => {
   try {
     if (!req.user) {
       console.log("User not authenticated");
       return res.status(401).send("Please sign in");
     }
 
+    console.log("Received request body:", req.body); // Log the incoming data
     const { title, body } = req.body;
     if (!title || !body) {
       console.log("Validation failed:", { title, body });
       return res.status(400).send("Title and body are required");
     }
 
-    const blog = await Blog.create({
+    const blogData = {
       body,
       title,
       createdBy: req.user._id,
-      coverImageURL: null, // No file upload for now
-    });
-    console.log("Blog created:", blog._id);
+      coverImageURL: null,
+    };
+    console.log("Attempting to create blog with data:", blogData);
+    const blog = await Blog.create(blogData);
+    console.log("Blog created with ID:", blog._id);
     res.redirect(`/blog/${blog._id}`);
   } catch (error) {
     console.error("Error creating blog:", error);
-    res.status(500).send("Error creating blog: " + error.message);
+    if (error.name === "ValidationError") {
+      res.status(400).send("Validation error: " + error.message);
+    } else {
+      res.status(500).send("Error creating blog: " + error.message);
+    }
   }
 });
 
 // Edit Blog Page
 router.get("/edit/:id", async (req, res) => {
-  if (!req.user) return res.redirect("/user/signin");
-  const blog = await Blog.findById(req.params.id);
-  if (!blog) return res.status(404).send("Blog not found");
-  if (blog.createdBy.toString() !== req.user._id.toString()) {
-    return res.status(403).send("You can only edit your own blogs");
+  try {
+    if (!req.user) {
+      console.log("User not authenticated in /edit");
+      return res.redirect("/user/signin");
+    }
+    console.log("Attempting to find blog with ID:", req.params.id);
+    const blog = await Blog.findById(req.params.id);
+    console.log("Blog found:", blog);
+    if (!blog) {
+      return res.status(404).send("Blog not found");
+    }
+    if (blog.createdBy.toString() !== req.user._id.toString()) {
+      return res.status(403).send("You can only edit your own blogs");
+    }
+    res.render("editBlog", { user: req.user, blog });
+  } catch (error) {
+    console.error("Error in /edit route:", error);
+    res.status(500).send("Error loading edit page: " + error.message);
   }
-  res.render("editBlog", { user: req.user, blog });
 });
 
 // Update Blog
