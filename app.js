@@ -7,7 +7,6 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 
 const Blog = require("./models/blog");
-
 const userRoute = require("./routes/user");
 const blogRoute = require("./routes/blog");
 
@@ -19,6 +18,19 @@ const {
 
 const app = express();
 const PORT = process.env.PORT || 8001;
+
+// Attempt to create uploads directory, but don't fail if it doesn't work
+const uploadDir = path.resolve("./public/uploads/");
+const fs = require("fs"); // Explicitly require fs here
+if (!fs.existsSync(uploadDir)) {
+    try {
+        fs.mkdirSync(uploadDir, { recursive: true });
+        console.log("Uploads directory created successfully");
+    } catch (err) {
+        console.warn("Failed to create uploads directory:", err.message);
+        // Continue without directory if creation fails (e.g., Render restriction)
+    }
+}
 
 mongoose
   .connect(process.env.MONGO_URI)

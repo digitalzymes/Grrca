@@ -1,38 +1,38 @@
 const { Router } = require("express");
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs"); // Explicitly imported
+// const fs = require("fs"); // Temporarily comment out fs to test without file operations
 
 const Blog = require("../models/blog");
 const { ensureAuthenticated } = require("../middlewares");
 
 const router = Router();
 
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        const uploadDir = path.resolve("./public/uploads/");
-        // Safely create directory if it doesn't exist
-        if (!fs.existsSync(uploadDir)) {
-            try {
-                fs.mkdirSync(uploadDir, { recursive: true });
-            } catch (err) {
-                console.error("Failed to create uploads directory:", err);
-                return cb(err, uploadDir); // Pass error to multer
-            }
-        }
-        cb(null, uploadDir);
-    },
-    filename: function (req, file, cb) {
-        const fileName = `${Date.now()}-${file.originalname}`;
-        cb(null, fileName);
-    }
-});
+// Comment out multer and fs-dependent logic for now
+// const storage = multer.diskStorage({
+//     destination: function (req, file, cb) {
+//         const uploadDir = path.resolve("./public/uploads/");
+//         if (!fs.existsSync(uploadDir)) {
+//             try {
+//                 fs.mkdirSync(uploadDir, { recursive: true });
+//             } catch (err) {
+//                 console.error("Failed to create uploads directory:", err);
+//                 return cb(err, uploadDir);
+//             }
+//         }
+//         cb(null, uploadDir);
+//     },
+//     filename: function (req, file, cb) {
+//         const fileName = `${Date.now()}-${file.originalname}`;
+//         cb(null, fileName);
+//     }
+// });
+
+// const upload = multer({ storage: storage });
 
 router.use(ensureAuthenticated);
 
-const upload = multer({ storage: storage });
-
-// Add New Blog Page
+// Add New Blog Page (without file upload for now)
 router.get("/add-new", (req, res) => {
     if (!req.user) return res.redirect("/user/signin");
     return res.render("addBlog", {
@@ -43,21 +43,19 @@ router.get("/add-new", (req, res) => {
 // View Blog Details
 router.get("/:id", async (req, res) => {
     const blog = await Blog.findById(req.params.id).populate("createdBy");
+    if (!blog) return res.status(404).send("Blog not found");
     res.render("blog", {
         user: req.user,
         blog,
     });
 });
 
-router.post("/", upload.single("coverImage"), async (req, res) => {
+router.post("/", async (req, res) => { // Removed upload.single for now
     try {
         if (!req.user) {
             console.log("User not authenticated");
             return res.status(401).send("Please sign in");
         }
-
-        console.log("Request Body:", req.body);
-        console.log("Uploaded File:", req.file);
 
         const { title, body } = req.body;
         if (!title || !body) {
@@ -69,7 +67,7 @@ router.post("/", upload.single("coverImage"), async (req, res) => {
             body,
             title,
             createdBy: req.user._id,
-            coverImageURL: req.file ? `/uploads/${req.file.filename}` : null,
+            coverImageURL: null, // No file upload for now
         });
         console.log("Blog created successfully:", blog._id);
         return res.redirect(`/blog/${blog._id}`);
@@ -93,8 +91,8 @@ router.get("/edit/:id", async (req, res) => {
     });
 });
 
-// Update Blog
-router.post("/edit/:id", upload.single("coverImage"), async (req, res) => {
+// Update Blog (without file upload for now)
+router.post("/edit/:id", async (req, res) => {
     if (!req.user) return res.redirect("/user/signin");
     const { title, body } = req.body;
     const blog = await Blog.findById(req.params.id);
@@ -105,22 +103,23 @@ router.post("/edit/:id", upload.single("coverImage"), async (req, res) => {
 
     blog.title = title;
     blog.body = body;
-    if (req.file) {
-        const oldImagePath = path.resolve(`./public${blog.coverImageURL}`);
-        if (fs.existsSync(oldImagePath)) {
-            try {
-                fs.unlinkSync(oldImagePath); // Delete old image
-            } catch (err) {
-                console.error("Failed to delete old image:", err);
-            }
-        }
-        blog.coverImageURL = `/uploads/${req.file.filename}`;
-    }
+    // Commented out file handling
+    // if (req.file) {
+    //     const oldImagePath = path.resolve(`./public${blog.coverImageURL}`);
+    //     if (fs.existsSync(oldImagePath)) {
+    //         try {
+    //             fs.unlinkSync(oldImagePath);
+    //         } catch (err) {
+        console.error("Failed to delete old image:", err);
+    //         }
+    //     }
+    //     blog.coverImageURL = `/uploads/${req.file.filename}`;
+    // }
     await blog.save();
     return res.redirect(`/blog/${blog._id}`);
 });
 
-// Delete Blog
+// Delete Blog (without file deletion for now)
 router.post("/delete/:id", async (req, res) => {
     if (!req.user) return res.redirect("/user/signin");
     const blog = await Blog.findById(req.params.id);
@@ -129,14 +128,15 @@ router.post("/delete/:id", async (req, res) => {
         return res.status(403).send("You can only delete your own blogs");
     }
 
-    const imagePath = path.resolve(`./public${blog.coverImageURL}`);
-    if (fs.existsSync(imagePath)) {
-        try {
-            fs.unlinkSync(imagePath); // Delete the image file
-        } catch (err) {
-            console.error("Failed to delete image:", err);
-        }
-    }
+    // Commented out file deletion
+    // const imagePath = path.resolve(`./public${blog.coverImageURL}`);
+    // if (fs.existsSync(imagePath)) {
+    //     try {
+    //         fs.unlinkSync(imagePath);
+    //     } catch (err) {
+    //         console.error("Failed to delete image:", err);
+    //     }
+    // }
 
     await Blog.findByIdAndDelete(req.params.id);
     return res.redirect("/");
