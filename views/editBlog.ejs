@@ -92,6 +92,8 @@
     </style>
     <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
 </head>
+<script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
+</head>
 <body>
     <%- include('./partials/nav') %>
 
@@ -134,10 +136,11 @@
                     accept="image/*"
                 >
                 <img 
-                    src="<%= blog.coverImageURL %>" 
+                    src="<%= blog.coverImageURL || '/default-image.jpg' %>" 
                     width="250" 
                     class="current-image" 
-                    alt="Current cover image"
+                    alt="Current cover image" 
+                    onerror="this.src='/default-image.jpg'; console.log('Image load failed:', this.src);"
                 >
             </div>
             <div class="btn-group">
@@ -151,7 +154,7 @@
     <script>
         // Image preview functionality
         const coverImageInput = document.getElementById('coverImage');
-        const imagePreview = document.getElementById('imagePreview');
+        const imagePreview = document.querySelector('.current-image'); // Use existing image
         const editorWarning = document.getElementById('editorWarning');
 
         coverImageInput.addEventListener('change', function() {
@@ -160,11 +163,8 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     imagePreview.src = e.target.result;
-                    imagePreview.style.display = 'block';
                 };
                 reader.readAsDataURL(file);
-            } else {
-                imagePreview.style.display = 'none';
             }
         });
 

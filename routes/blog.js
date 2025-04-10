@@ -11,7 +11,11 @@ const router = Router();
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, path.resolve(`./public/uploads/`));
+        const uploadsDir = path.resolve("./public/uploads");
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
+        }
+        cb(null, uploadsDir);
     },
     filename: function (req, file, cb) {
         const fileName = `${Date.now()}-${file.originalname}`;
@@ -34,66 +38,42 @@ router.get("/add-new", (req, res) => {
 // View Blog Details
 router.get("/:id", async (req, res) => {
     const blog = await Blog.findById(req.params.id).populate("createdBy");
+    if (!blog) return res.status(404).send("Blog not found");
     res.render("blog", {
         user: req.user,
         blog,
     });
 });
 
-
-// 👇 TEST ONLY: Create Blog without auth and image
-// router.post("/create", async (req, res) => {
-//     try {
-//       const { title, content, createdBy } = req.body;
-//       if (!title || !content || !createdBy) {
-//         return res.status(400).json({ message: "Missing required fields" });
-//       }
-  
-//       const blog = await Blog.create({
-//         title,
-//         body: content,
-//         createdBy,
-//         coverImageURL: null,
-//       });
-  
-//       res.status(201).json(blog);
-//     } catch (error) {
-//       console.error("Error creating blog:", error);
-//       res.status(500).json({ message: "Error creating blog", error: error.message });
-//     }
-//   });
-  
-
-
+// Add New Blog
 router.post("/", upload.single("coverImage"), async (req, res) => {
     try {
-      if (!req.user) {
-        console.log("User not authenticated");
-        return res.status(401).send("Please sign in");
-      }
-  
-      console.log("Request Body:", req.body);
-      console.log("Uploaded File:", req.file);
-  
-      const { title, body } = req.body;
-      if (!title || !body) {
-        console.log("Validation failed: title or body missing", { title, body });
-        return res.status(400).send("Title and body are required");
-      }
-  
-      const blog = await Blog.create({
-        body,
-        title,
-        createdBy: req.user._id,
-        coverImageURL: req.file ? `/uploads/${req.file.filename}` : null,
-      });
-      console.log("Blog created successfully:", blog._id);
-      return res.redirect(`/blog/${blog._id}`);
+        if (!req.user) {
+            console.log("User not authenticated");
+            return res.status(401).send("Please sign in");
+        }
+
+        const { title, body } = req.body;
+        if (!title || !body) {
+            console.log("Validation failed: title or body missing", { title, body });
+            return res.status(400).send("Title and body are required");
+        }
+
+        const blogData = {
+            title,
+            body,
+            createdBy: req.user._id,
+            coverImageURL: req.file ? `/uploads/${req.file.filename}` : null,
+        };
+
+        const blog = await Blog.create(blogData);
+        console.log("Blog created successfully:", blog._id);
+        return res.redirect(`/blog/${blog._id}`);
     } catch (error) {
-      console.error("Error creating blog:", error);
-      return res.status(500).send("Error creating blog: " + error.message);
+        console.error("Error creating blog:", error);
+        return res.status(500).send("Error creating blog: " + error.message);
     }
-  });
+});
 
 // Edit Blog Page
 router.get("/edit/:id", async (req, res) => {
@@ -111,23 +91,28 @@ router.get("/edit/:id", async (req, res) => {
 
 // Update Blog
 router.post("/edit/:id", upload.single("coverImage"), async (req, res) => {
-    if (!req.user) return res.redirect("/user/signin");
-    const { title, body } = req.body;
-    const blog = await Blog.findById(req.params.id);
-    if (!blog) return res.status(404).send("Blog not found");
-    if (blog.createdBy.toString() !== req.user._id.toString()) {
-        return res.status(403).send("You can only edit your own blogs");
-    }
+    try {
+        if (!req.user) return res.redirect("/user/signin");
+        const { title, body } = req.body;
+        const blog = await Blog.findById(req.params.id);
+        if (!blog) return res.status(404).send("Blog not found");
+        if (blog.createdBy.toString() !== req.user._id.toString()) {
+            return res.status(403).send("You can only edit your own blogs");
+        }
 
-    blog.title = title;
-    blog.body = body;
-    if (req.file) {
-        const oldImagePath = path.resolve(`./public${blog.coverImageURL}`);
-        if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
-        blog.coverImageURL = `/uploads/${req.file.filename}`;
+        blog.title = title || blog.title;
+        blog.body = body || blog.body;
+        if (req.file) {
+            const oldImagePath = path.resolve(`./public${blog.coverImageURL}`);
+            if (fs.existsSync(oldImagePath)) fs.unlinkSync(oldImagePath);
+            blog.coverImageURL = `/uploads/${req.file.filename}`;
+        }
+        await blog.save();
+        return res.redirect(`/blog/${blog._id}`);
+    } catch (error) {
+        console.error("Error updating blog:", error);
+        return res.status(500).send("Error updating blog: " + error.message);
     }
-    await blog.save();
-    return res.redirect(`/blog/${blog._id}`);
 });
 
 // Delete Blog

@@ -20,6 +20,13 @@ const {
 const app = express();
 const PORT = process.env.PORT || 8001;
 
+// Ensure uploads directory exists
+const uploadsDir = path.resolve("./public/uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log("Created uploads directory:", uploadsDir);
+}
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
@@ -28,9 +35,9 @@ mongoose
 app.set("view engine", "ejs");
 app.set("views", path.resolve("./views"));
 
-app.use(cors({ origin: "https://grrcaindia.com" }));
+app.use(cors({ origin: "https://grrcaindia.com", credentials: true }));
 app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: true })); // Changed to true for file uploads
 app.use(express.static(path.resolve("./public")));
 app.use(cookieParser());
 app.use(checkForAuthenticationCookie("token"));
