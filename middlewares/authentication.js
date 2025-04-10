@@ -4,7 +4,7 @@ function checkForAuthenticationCookie(cookieName) {
   return (req, res, next) => {
     const tokenCookieValue = req.cookies[cookieName];
     if (!tokenCookieValue) {
-      return next(); // No token, proceed without user
+      return next();
     }
 
     try {
@@ -12,7 +12,6 @@ function checkForAuthenticationCookie(cookieName) {
       req.user = userPayload;
     } catch (error) {
       console.warn("Invalid token:", error.message);
-      // Proceed without req.user if token is invalid
     }
     return next();
   };

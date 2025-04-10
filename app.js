@@ -18,7 +18,7 @@ const {
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-mongoose.set("strictQuery", false); // Suppress Mongoose warning
+mongoose.set("strictQuery", false);
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
@@ -37,14 +37,11 @@ app.use(express.static(path.resolve("./public")));
 app.use(cookieParser());
 app.use(checkForAuthenticationCookie("token"));
 
-// Single root route with authentication
+// Simplified /admin route
 app.get("/admin", ensureAuthenticated, async (req, res) => {
   try {
     const allBlogs = await Blog.find({});
-    res.render("home", {
-      user: req.user,
-      blogs: allBlogs,
-    });
+    res.render("home", { user: req.user, blogs: allBlogs });
   } catch (error) {
     console.error("Error in /admin:", error);
     res.status(500).send("Error loading admin page");
@@ -56,7 +53,7 @@ app.get("/", (req, res) => {
   res.redirect("/user/signin");
 });
 
-// Public APIs
+// Public APIs with error handling
 app.get("/api/blogs", async (req, res) => {
   try {
     const blogs = await Blog.find({}).sort({ createdAt: -1 });

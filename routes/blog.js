@@ -1,33 +1,34 @@
 const { Router } = require("express");
-const multer = require("multer");
+// const multer = require("multer"); // Temporarily commented out
 const path = require("path");
-const fs = require("fs");
+// const fs = require("fs"); // Temporarily commented out
 
 const Blog = require("../models/blog");
 const { ensureAuthenticated } = require("../middlewares");
 
 const router = Router();
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    const uploadDir = path.resolve("./public/uploads/");
-    try {
-      if (!fs.existsSync(uploadDir)) {
-        fs.mkdirSync(uploadDir, { recursive: true });
-      }
-      cb(null, uploadDir);
-    } catch (err) {
-      console.error("Failed to access uploads directory:", err);
-      cb(new Error("File system access restricted"), uploadDir); // Fallback
-    }
-  },
-  filename: function (req, file, cb) {
-    const fileName = `${Date.now()}-${file.originalname}`;
-    cb(null, fileName);
-  },
-});
+// Commented out multer configuration
+// const storage = multer.diskStorage({
+//   destination: function (req, file, cb) {
+//     const uploadDir = path.resolve("./public/uploads/");
+//     try {
+//       if (!fs.existsSync(uploadDir)) {
+//         fs.mkdirSync(uploadDir, { recursive: true });
+//       }
+//       cb(null, uploadDir);
+//     } catch (err) {
+//       console.error("Failed to access uploads directory:", err);
+//       cb(new Error("File system access restricted"), uploadDir);
+//     }
+//   },
+//   filename: function (req, file, cb) {
+//     const fileName = `${Date.now()}-${file.originalname}`;
+//     cb(null, fileName);
+//   },
+// });
 
-const upload = multer({ storage: storage });
+// const upload = multer({ storage: storage });
 
 router.use(ensureAuthenticated);
 
@@ -41,14 +42,17 @@ router.get("/add-new", (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const blog = await Blog.findById(req.params.id).populate("createdBy");
-    if (!blog) return res.status(404).send("Blog not found");
+    if (!blog) {
+      return res.status(404).send("Blog not found");
+    }
     res.render("blog", { user: req.user, blog });
   } catch (error) {
+    console.error("Error loading blog:", error);
     res.status(500).send("Error loading blog");
   }
 });
 
-router.post("/", upload.single("coverImage"), async (req, res) => {
+router.post("/", async (req, res) => { // Removed upload.single
   try {
     if (!req.user) {
       console.log("User not authenticated");
@@ -65,7 +69,7 @@ router.post("/", upload.single("coverImage"), async (req, res) => {
       body,
       title,
       createdBy: req.user._id,
-      coverImageURL: req.file ? `/uploads/${req.file.filename}` : null,
+      coverImageURL: null, // No file upload for now
     });
     console.log("Blog created:", blog._id);
     res.redirect(`/blog/${blog._id}`);
@@ -87,7 +91,7 @@ router.get("/edit/:id", async (req, res) => {
 });
 
 // Update Blog
-router.post("/edit/:id", upload.single("coverImage"), async (req, res) => {
+router.post("/edit/:id", async (req, res) => {
   try {
     if (!req.user) return res.redirect("/user/signin");
     const { title, body } = req.body;
@@ -99,9 +103,6 @@ router.post("/edit/:id", upload.single("coverImage"), async (req, res) => {
 
     blog.title = title;
     blog.body = body;
-    if (req.file) {
-      blog.coverImageURL = `/uploads/${req.file.filename}`;
-    }
     await blog.save();
     res.redirect(`/blog/${blog._id}`);
   } catch (error) {
