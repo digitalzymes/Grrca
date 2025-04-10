@@ -4,12 +4,12 @@ const User = require("../models/user");
 const router = Router();
 
 router.get("/signin", (req, res) => {
-  if (req.user) return res.redirect("/"); // If logged in, go to home
+  if (req.user) return res.redirect("/admin");
   return res.render("signin");
 });
 
 router.get("/signup", (req, res) => {
-  if (req.user) return res.redirect("/"); // If logged in, go to home
+  if (req.user) return res.redirect("/admin");
   return res.render("signup");
 });
 
@@ -18,7 +18,7 @@ router.post("/signin", async (req, res) => {
   const { email, password } = req.body;
   try {
     const token = await User.matchPasswordAndGenerateToken(email, password);
-    return res.cookie("token", token).redirect("/admin"); // Changed from "/"
+    return res.cookie("token", token).redirect("/admin");
   } catch (error) {
     return res.render("signin", { error: "Incorrect Email or Password" });
   }
@@ -26,11 +26,12 @@ router.post("/signin", async (req, res) => {
 
 // In /user/signup POST
 router.post("/signup", async (req, res) => {
-  const { fullName, email, password } = req.body;
+  const { name: fullName, email, password } = req.body;
 
   try {
-    await User.create({ fullName, email, password });
-    return res.redirect("/admin");
+    const user = await User.create({ fullName, email, password });
+    const token = await User.matchPasswordAndGenerateToken(email, password); // Generate token after signup
+    return res.cookie("token", token).redirect("/admin"); // Redirect to admin with token
   } catch (error) {
     if (error.code === 11000 && error.keyPattern?.email) {
       return res.render("signup", { error: "Email already in use." });
@@ -42,12 +43,9 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-
-
-
 // In /user/logout
 router.get("/logout", (req, res) => {
-  res.clearCookie("token").redirect("/user/signin"); // Changed from "/"
+  res.clearCookie("token").redirect("/user/signin");
 });
 
 module.exports = router;

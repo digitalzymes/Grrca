@@ -33,7 +33,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.resolve("./public")));
 app.use(cookieParser());
-app.use(checkForAuthenticationCookie("token")); // Fixed: Use the function directly
+app.use(checkForAuthenticationCookie("token"));
 
 // Single root route with authentication and blog fetching
 app.get("/admin", ensureAuthenticated, async (req, res) => {
@@ -53,14 +53,13 @@ app.get("/", (req, res) => {
 app.get("/api/blogs", async (req, res) => {
   try {
     const blogs = await Blog.find({}).sort({ createdAt: -1 });
-    console.log("Fetched blogs:", blogs); // 👈 Debug log
+    console.log("Fetched blogs:", blogs);
     res.json(blogs);
   } catch (error) {
-    console.error("Error in /api/blogs:", error); // 👈 Error log
+    console.error("Error in /api/blogs:", error);
     res.status(500).json({ message: "Error fetching blogs" });
   }
 });
-
 
 // Public API to fetch a single blog by ID
 app.get("/api/blogs/:id", async (req, res) => {
@@ -78,6 +77,9 @@ app.use("/blog", blogRoute);
 
 app.use(errorHandler);
 
+// Catch-all route for debugging
+app.use((req, res) => {
+  res.status(404).send("Page not found");
+});
+
 app.listen(PORT, () => console.log(`Server Started at PORT:${PORT}`));
-
-

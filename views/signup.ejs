@@ -139,7 +139,7 @@
   </head>
   <body>
     <!-- Modal -->
-    <div class="modal fade show d-block" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
+    <div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
       <div class="marquee-container">
         <span class="marquee-text">
           Welcome to Raj Raghunath and Co. - Your Trusted Partner
@@ -210,6 +210,23 @@
       </div>
     </div>
 
+    <!-- Bootstrap JS and Custom Script -->
     <%- include('./partials/scripts') %>
+    <script>
+      // Show the modal on page load
+      document.addEventListener('DOMContentLoaded', function () {
+        const signupModal = new bootstrap.Modal(document.getElementById('signupModal'));
+        signupModal.show();
+
+        // Focus on the first input field
+        document.getElementById('fullName').focus();
+
+        // Handle form submission success (if needed)
+        document.querySelector('form').addEventListener('submit', function () {
+          // This will be handled by the server, but we can hide the modal on success
+          // Note: This is optimistic; actual success depends on the server response
+        });
+      });
+    </script>
   </body>
 </html>

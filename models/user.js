@@ -12,7 +12,7 @@ const userSchema = new Schema(
       type: String,
       required: true,
       unique: true,
-      lowercase: true, // Ensures email is stored in lowercase for consistency
+      lowercase: true,
     },
     salt: {
       type: String,
@@ -28,7 +28,7 @@ const userSchema = new Schema(
     role: {
       type: String,
       enum: ["USER", "ADMIN"],
-      default: "USER", // Changed to USER for security
+      default: "USER",
     },
   },
   { timestamps: true }
@@ -41,7 +41,7 @@ userSchema.pre("save", function (next) {
   if (!user.isModified("password")) return next();
 
   try {
-    const salt = randomBytes(16).toString("hex"); // Explicitly specify hex encoding
+    const salt = randomBytes(16).toString("hex");
     const hashedPassword = createHmac("sha256", salt)
       .update(user.password)
       .digest("hex");
@@ -50,7 +50,7 @@ userSchema.pre("save", function (next) {
     this.password = hashedPassword;
     next();
   } catch (error) {
-    next(error); // Pass any hashing errors to Mongoose
+    next(error);
   }
 });
 
@@ -81,7 +81,7 @@ userSchema.static("verifyToken", async function (token) {
   const { validateToken } = require("../services/authentication");
   try {
     const payload = validateToken(token);
-    const user = await this.findById(payload._id).select("-password -salt"); // Exclude sensitive fields
+    const user = await this.findById(payload._id).select("-password -salt");
     if (!user) throw new Error("User not found");
     return user;
   } catch (error) {
@@ -89,6 +89,6 @@ userSchema.static("verifyToken", async function (token) {
   }
 });
 
-const User = model("User", userSchema); // Capitalized for convention
+const User = model("User", userSchema);
 
 module.exports = User;
