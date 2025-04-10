@@ -78,6 +78,5 @@ app.use("/blog", blogRoute);
 
 app.use(errorHandler);
 
-// app.listen(PORT, () => console.log(`Server Started at PORT:${PORT}`));
+app.listen(PORT, () => console.log(`Server Started at PORT:${PORT}`));
 
-module.exports = app;
