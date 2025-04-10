@@ -20,8 +20,19 @@ const storage = multer.diskStorage({
 });
 
 router.use(ensureAuthenticated);
+const uploadPath = path.resolve(__dirname, 'public/uploads');
 
-const upload = multer({ storage: storage });
+const createUploadMiddleware = () => {
+    const uploadPath = path.resolve(__dirname, 'public/uploads');
+    
+    if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    return multer({ storage });
+};
+
+const upload = createUploadMiddleware();
 
 // Add New Blog Page
 router.get("/add-new", (req, res) => {
