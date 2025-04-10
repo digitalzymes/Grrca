@@ -40,6 +40,31 @@ router.get("/:id", async (req, res) => {
     });
 });
 
+
+// 👇 TEST ONLY: Create Blog without auth and image
+// router.post("/create", async (req, res) => {
+//     try {
+//       const { title, content, createdBy } = req.body;
+//       if (!title || !content || !createdBy) {
+//         return res.status(400).json({ message: "Missing required fields" });
+//       }
+  
+//       const blog = await Blog.create({
+//         title,
+//         body: content,
+//         createdBy,
+//         coverImageURL: null,
+//       });
+  
+//       res.status(201).json(blog);
+//     } catch (error) {
+//       console.error("Error creating blog:", error);
+//       res.status(500).json({ message: "Error creating blog", error: error.message });
+//     }
+//   });
+  
+
+
 router.post("/", upload.single("coverImage"), async (req, res) => {
     try {
       if (!req.user) {

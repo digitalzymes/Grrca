@@ -12,9 +12,9 @@ const userRoute = require("./routes/user");
 const blogRoute = require("./routes/blog");
 
 const {
-  checkForAuthenticationCookie, 
-  ensureAuthenticated, 
-  errorHandler
+  checkForAuthenticationCookie,
+  ensureAuthenticated,
+  errorHandler,
 } = require("./middlewares");
 
 const app = express();
@@ -28,7 +28,7 @@ mongoose
 app.set("view engine", "ejs");
 app.set("views", path.resolve("./views"));
 
-app.use(cors());
+app.use(cors({ origin: "https://grrcaindia.com" }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.resolve("./public")));
@@ -44,22 +44,23 @@ app.get("/admin", ensureAuthenticated, async (req, res) => {
   });
 });
 
-
 app.get("/", (req, res) => {
   if (req.user) return res.redirect("/admin");
   res.redirect("/user/signin");
 });
 
-
 // Public API to fetch all blogs for frontend
 app.get("/api/blogs", async (req, res) => {
   try {
-    const blogs = await Blog.find({}).sort({ createdAt: -1 }); // Latest first
+    const blogs = await Blog.find({}).sort({ createdAt: -1 });
+    console.log("Fetched blogs:", blogs); // 👈 Debug log
     res.json(blogs);
   } catch (error) {
+    console.error("Error in /api/blogs:", error); // 👈 Error log
     res.status(500).json({ message: "Error fetching blogs" });
   }
 });
+
 
 // Public API to fetch a single blog by ID
 app.get("/api/blogs/:id", async (req, res) => {
@@ -72,10 +73,8 @@ app.get("/api/blogs/:id", async (req, res) => {
   }
 });
 
-
 app.use("/user", userRoute);
 app.use("/blog", blogRoute);
-
 
 app.use(errorHandler);
 

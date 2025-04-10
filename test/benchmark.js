@@ -7,12 +7,12 @@ const blogId = '67ed1874a65c86c70f2937e7';
 const tests = [
   {
     title: 'GET all blogs',
-    url: 'http://localhost:8000/api/blogs',
+    url: 'https://grrca.vercel.app/api/blogs',
     method: 'GET',
   },
   {
     title: 'GET single blog',
-    url: `http://localhost:8000/api/blogs/${blogId}`,
+    url: `https://grrca.vercel.app/api/blogs/${blogId}`,
     method: 'GET',
   }
 ];
