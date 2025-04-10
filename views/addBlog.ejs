@@ -162,6 +162,17 @@
           display: block;
         }
       }
+      /* Notification Style */
+      .tiny-warning {
+        background-color: #fff3cd;
+        color: #856404;
+        border: 1px solid #ffeeba;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 1rem;
+        text-align: center;
+        display: none;
+      }
     </style>
     <!-- Include TinyMCE CDN -->
     <script src="https://cdn.tiny.cloud/1/3u04xmgjti9o8rf0c16ja37y8eba99qslojvenr8vmifqh8j/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
@@ -173,6 +184,9 @@
       <div class="main-content">
         <div class="add-container">
           <h1>Create a New Blog</h1>
+          <div class="tiny-warning" id="tinyWarning">
+            Warning: The TinyMCE editor is not loading due to domain restrictions. Please contact the administrator to register this domain with TinyMCE. You can still use the basic textarea to draft your blog.
+          </div>
           <form action="/blog" method="post" enctype="multipart/form-data" id="blogForm">
             <div class="mb-4">
               <label for="coverImage" class="form-label">Cover Image</label>
@@ -214,7 +228,6 @@
         </div>
       </div>
     </div>
-    <!-- Inline Scripts -->
     <%- include('./partials/scripts.ejs') %>
 
     <script>
@@ -236,7 +249,8 @@
         }
       });
 
-      // Initialize TinyMCE editor
+      // Initialize TinyMCE editor with error handling
+      let tinyInitialized = false;
       tinymce.init({
         selector: '#body',
         height: 200, /* Reduced height for mobile */
@@ -252,14 +266,35 @@
         mobile: {
           theme: 'mobile',
           plugins: 'autosave lists autolink'
+        },
+        setup: function(editor) {
+          editor.on('init', function() {
+            tinyInitialized = true;
+            console.log('TinyMCE initialized successfully');
+          });
+        },
+        error_callback: function(error) {
+          console.error('TinyMCE initialization failed:', error);
+          tinyInitialized = false;
+          const tinyWarning = document.getElementById('tinyWarning');
+          tinyWarning.style.display = 'block';
         }
+      }).then(() => {
+        console.log('TinyMCE loaded');
+      }).catch((err) => {
+        console.error('TinyMCE failed to load:', err);
+        tinyInitialized = false;
+        const tinyWarning = document.getElementById('tinyWarning');
+        tinyWarning.style.display = 'block';
       });
 
       // Sync TinyMCE content and handle form submission
       const blogForm = document.getElementById('blogForm');
       blogForm.addEventListener('submit', function(e) {
         e.preventDefault(); // Prevent default submission for validation
-        tinymce.triggerSave(); // Sync TinyMCE content to textarea
+        if (tinyInitialized) {
+          tinymce.triggerSave(); // Sync TinyMCE content to textarea
+        }
         const title = document.getElementById('title').value.trim();
         const body = document.getElementById('body').value.trim();
 
