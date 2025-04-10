@@ -102,9 +102,6 @@
         margin-top: 1rem;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       }
-      .tox-tinymce {
-        border-radius: 15px !important;
-      }
       /* Enhanced Mobile Responsiveness */
       @media (max-width: 768px) {
         .wrapper {
@@ -162,20 +159,17 @@
           display: block;
         }
       }
-      /* Notification Style */
-      .tiny-warning {
-        background-color: #fff3cd;
-        color: #856404;
-        border: 1px solid #ffeeba;
-        border-radius: 5px;
-        padding: 10px;
-        margin-bottom: 1rem;
-        text-align: center;
+      /* Alternative Editor Warning */
+      .editor-warning {
         display: none;
+        color: #dc3545;
+        text-align: center;
+        margin-top: 1rem;
+        font-size: 0.9rem;
       }
     </style>
-    <!-- Include TinyMCE CDN -->
-    <script src="https://cdn.tiny.cloud/1/fic18hfdoa1zde51vjmbq70g8dlv9maox37uear2yd5g3pyl/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+    <!-- Include CKEditor 5 CDN -->
+    <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
   </head>
   <body>
     <div class="wrapper">
@@ -184,9 +178,6 @@
       <div class="main-content">
         <div class="add-container">
           <h1>Create a New Blog</h1>
-          <div class="tiny-warning" id="tinyWarning">
-            Warning: The TinyMCE editor is not loading due to domain restrictions. Please contact the administrator to register this domain with TinyMCE. You can still use the basic textarea to draft your blog.
-          </div>
           <form action="/blog" method="post" enctype="multipart/form-data" id="blogForm">
             <div class="mb-4">
               <label for="coverImage" class="form-label">Cover Image</label>
@@ -220,6 +211,9 @@
                 id="body"
                 placeholder="Share your story here..."
               ></textarea>
+              <div id="editorWarning" class="editor-warning">
+                CKEditor is not available. Please use <a href="https://docs.google.com/document/" target="_blank">Google Docs</a> or <a href="https://www.microsoft.com/en-us/microsoft-365/word" target="_blank">Microsoft Word</a> to draft your content, then paste it here after the issue is resolved.
+              </div>
             </div>
             <div class="btn-group">
               <button type="submit" class="btn btn-primary">Publish Blog</button>
@@ -228,12 +222,14 @@
         </div>
       </div>
     </div>
+    <!-- Inline Scripts -->
     <%- include('./partials/scripts.ejs') %>
 
     <script>
       // Image preview functionality
       const coverImageInput = document.getElementById('coverImage');
       const imagePreview = document.getElementById('imagePreview');
+      const editorWarning = document.getElementById('editorWarning');
 
       coverImageInput.addEventListener('change', function() {
         const file = this.files[0];
@@ -249,52 +245,32 @@
         }
       });
 
-      // Initialize TinyMCE editor with error handling
-      let tinyInitialized = false;
-      tinymce.init({
-        selector: '#body',
-        height: 200, /* Reduced height for mobile */
-        plugins: [
-          'advlist autolink lists link image charmap print preview anchor',
-          'searchreplace visualblocks code fullscreen',
-          'insertdatetime media table paste code help wordcount'
-        ],
-        toolbar: 'undo redo | formatselect | bold italic backcolor | \
-          alignleft aligncenter alignright alignjustify | \
-          bullist numlist outdent indent | removeformat | help',
-        content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
-        mobile: {
-          theme: 'mobile',
-          plugins: 'autosave lists autolink'
-        },
-        setup: function(editor) {
-          editor.on('init', function() {
-            tinyInitialized = true;
-            console.log('TinyMCE initialized successfully');
-          });
-        },
-        error_callback: function(error) {
-          console.error('TinyMCE initialization failed:', error);
-          tinyInitialized = false;
-          const tinyWarning = document.getElementById('tinyWarning');
-          tinyWarning.style.display = 'block';
-        }
-      }).then(() => {
-        console.log('TinyMCE loaded');
-      }).catch((err) => {
-        console.error('TinyMCE failed to load:', err);
-        tinyInitialized = false;
-        const tinyWarning = document.getElementById('tinyWarning');
-        tinyWarning.style.display = 'block';
-      });
+      // Initialize CKEditor 5
+      ClassicEditor
+        .create(document.querySelector('#body'), {
+          height: 200, // Matches TinyMCE's height
+          toolbar: [
+            'heading', '|', 'bold', 'italic', 'underline', 'strike',
+            'link', 'imageUpload', 'blockQuote', 'codeBlock',
+            'alignment', 'bulletedList', 'numberedList', 'outdent', 'indent',
+            'undo', 'redo'
+          ],
+          image: {
+            toolbar: ['imageStyle:full', 'imageStyle:side', '|', 'imageTextAlternative']
+          }
+        })
+        .then(editor => {
+          console.log('CKEditor initialized');
+        })
+        .catch(error => {
+          console.error('CKEditor initialization failed:', error);
+          editorWarning.style.display = 'block';
+        });
 
-      // Sync TinyMCE content and handle form submission
+      // Sync CKEditor content and handle form submission
       const blogForm = document.getElementById('blogForm');
       blogForm.addEventListener('submit', function(e) {
         e.preventDefault(); // Prevent default submission for validation
-        if (tinyInitialized) {
-          tinymce.triggerSave(); // Sync TinyMCE content to textarea
-        }
         const title = document.getElementById('title').value.trim();
         const body = document.getElementById('body').value.trim();
 
