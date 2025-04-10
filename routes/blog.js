@@ -9,26 +9,26 @@ const { ensureAuthenticated } = require("../middlewares");
 const router = Router();
 
 // Commented out multer configuration
-// const storage = multer.diskStorage({
-//   destination: function (req, file, cb) {
-//     const uploadDir = path.resolve("./public/uploads/");
-//     try {
-//       if (!fs.existsSync(uploadDir)) {
-//         fs.mkdirSync(uploadDir, { recursive: true });
-//       }
-//       cb(null, uploadDir);
-//     } catch (err) {
-//       console.error("Failed to access uploads directory:", err);
-//       cb(new Error("File system access restricted"), uploadDir);
-//     }
-//   },
-//   filename: function (req, file, cb) {
-//     const fileName = `${Date.now()}-${file.originalname}`;
-//     cb(null, fileName);
-//   },
-// });
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    const uploadDir = path.resolve("../public/uploads/");
+    try {
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+      cb(null, uploadDir);
+    } catch (err) {
+      console.error("Failed to access uploads directory:", err);
+      cb(new Error("File system access restricted"), uploadDir);
+    }
+  },
+  filename: function (req, file, cb) {
+    const fileName = `${Date.now()}-${file.originalname}`;
+    cb(null, fileName);
+  },
+});
 
-// const upload = multer({ storage: storage });
+const upload = multer({ storage: storage });
 
 router.use(ensureAuthenticated);
 
