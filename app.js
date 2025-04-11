@@ -36,7 +36,7 @@ app.set("views", path.resolve("./views"));
 // Middleware
 app.use(
   cors({
-    origin: "https://grrcaindia.com/" || "http://127.0.0.1:5500",
+    origin: "http://127.0.0.1:5500",
     credentials: true,
   })
 );
