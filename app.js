@@ -22,7 +22,7 @@ const PORT = process.env.PORT || 5001;
 
 // MongoDB Connection
 mongoose
-  .connect("mongodb+srv://grrcaadmin:cf5CGEe6jTSNlE5F@grrcaadmin.c38gga7.mongodb.net/?retryWrites=true&w=majority&appName=GRRCAAdmin", {
+  .connect( process.env.MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
