@@ -36,7 +36,7 @@ app.set("views", path.resolve("./views"));
 // Middleware
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: "https://grrcaindia.com/" || "http://localhost:3000",
     credentials: true,
   })
 );
@@ -81,6 +81,7 @@ app.get("/", async (req, res) => {
     });
   }
 });
+// Public API Routes
 // Public API Routes
 app.get("/api/blogs", async (req, res) => {
   try {
