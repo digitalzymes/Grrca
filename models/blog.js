@@ -10,9 +10,12 @@ const blogSchema = new Schema(
       type: String,
       required: true,
     },
-    coverImageURL: {
-      type: String,
-      required: false,
+    coverImage: {
+      data: Buffer,
+      contentType: {
+        type: String,
+        enum: ["image/jpeg", "image/png"], // Restrict to specific formats
+      },
     },
     createdBy: {
       type: Schema.Types.ObjectId,

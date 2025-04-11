@@ -9,25 +9,25 @@ const { ensureAuthenticated } = require("../middlewares");
 const router = Router();
 
 // Multer configuration with file filter and limits
-const storage = multer.diskStorage({
-  destination: async function (req, file, cb) {
-    const uploadDir = path.resolve("./public/uploads/");
-    try {
-      await fs.access(uploadDir); // Check if directory exists
-    } catch {
-      try {
-        await fs.mkdir(uploadDir, { recursive: true }); // Create if it doesn't exist
-      } catch (err) {
-        console.warn("Could not create uploads directory on Render:", err.message);
-      }
-    }
-    cb(null, uploadDir);
-  },
-  filename: function (req, file, cb) {
-    const fileName = `${Date.now()}-${file.originalname}`;
-    cb(null, fileName);
-  },
-});
+// const storage = multer.diskStorage({
+//   destination: async function (req, file, cb) {
+//     const uploadDir = path.resolve("./public/uploads/");
+//     try {
+//       await fs.access(uploadDir); // Check if directory exists
+//     } catch {
+//       try {
+//         await fs.mkdir(uploadDir, { recursive: true }); // Create if it doesn't exist
+//       } catch (err) {
+//         console.warn("Could not create uploads directory on Render:", err.message);
+//       }
+//     }
+//     cb(null, uploadDir);
+//   },
+//   filename: function (req, file, cb) {
+//     const fileName = `${Date.now()}-${file.originalname}`;
+//     cb(null, fileName);
+//   },
+// });
 
 const fileFilter = (req, file, cb) => {
   // Accept images only
@@ -38,7 +38,7 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   fileFilter: fileFilter,
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB limit
@@ -91,13 +91,21 @@ router.post("/", upload.single("coverImage"), async (req, res) => {
       return res.status(400).send("Title and body are required");
     }
 
-    const blog = await Blog.create({
+    const blog = await Blog({
       body,
       title,
       createdBy: req.user._id,
-      coverImageURL: req.file ? `/uploads/${req.file.filename}` : null,
     });
-    console.log("Blog created successfully:", blog);
+
+    if(req.file) {
+      blog.coverImage = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype,
+      }
+    };
+
+    await blog.save();
+    console.log("Blog created successfully:", blog._id);
     return res.redirect(`/blog/${blog._id}`);
   } catch (error) {
     console.error("Error creating blog:", error);
@@ -142,18 +150,14 @@ router.post("/edit/:id", upload.single("coverImage"), async (req, res) => {
     blog.title = title.trim();
     blog.body = body.trim();
 
-    if (req.file) {
-      // Delete old image if it exists
-      if (blog.coverImageURL) {
-        const oldImagePath = path.resolve(`./public${blog.coverImageURL}`);
-        try {
-          await fs.unlink(oldImagePath);
-        } catch (err) {
-          console.log("Error deleting old image:", err);
-        }
+    if(req.file) {
+      blog.coverImage = {
+        data: req.file.buffer,
+        contentType: req.file.mimetype,
       }
-      blog.coverImageURL = `/uploads/${req.file.filename}`;
-    }
+    };
+
+    await blog.save();
 
     await blog.save();
     return res.redirect(`/blog/${blog._id}`);

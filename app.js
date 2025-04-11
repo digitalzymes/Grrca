@@ -13,7 +13,6 @@ const blogRoute = require("./routes/blog");
 
 const {
   checkForAuthenticationCookie,
-  ensureAuthenticated,
   errorHandler,
 } = require("./middlewares");
 
@@ -36,7 +35,7 @@ app.set("views", path.resolve("./views"));
 // Middleware
 app.use(
   cors({
-    origin: "https://grrcaindia.com",
+    origin: "http://grrcaindia.com",
     credentials: true,
   })
 );

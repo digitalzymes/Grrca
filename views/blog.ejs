@@ -171,7 +171,7 @@
       <div class="blog-container">
         <h1 class="blog-title"><%= blog.title %></h1>
         <img
-          src="<%= blog.coverImageURL %>"
+          src="data:<%= blog.coverImage.contentType %>;base64,<%= blog.coverImage.data.toString('base64') %>"
           alt="Blog Cover"
           class="blog-image"
         />
