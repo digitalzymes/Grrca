@@ -36,7 +36,7 @@ app.set("views", path.resolve("./views"));
 // Middleware
 app.use(
   cors({
-    origin: "https://grrcaindia.com/",
+    origin: "https://grrcaindia.com",
     credentials: true,
   })
 );
