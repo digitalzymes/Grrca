@@ -158,7 +158,8 @@
     </style>
   </head>
   <body>
-    <button class="hamburger">☰</button> <!-- Hamburger menu button -->
+    <button class="hamburger">&#9776;</button>
+    <!-- Hamburger menu button -->
     <div class="sidebar">
       <h2>Raj Raghunath and Co.</h2>
       <a href="/">Home</a>
@@ -169,10 +170,17 @@
     <div class="container">
       <div class="blog-container">
         <h1 class="blog-title"><%= blog.title %></h1>
-        <img src="<%= blog.coverImageURL %>" alt="Blog Cover" class="blog-image" />
+        <img
+          src="<%= blog.coverImageURL %>"
+          alt="Blog Cover"
+          class="blog-image"
+        />
         <div class="blog-body"><%- blog.body %></div>
         <div class="author-info">
-          <span class="author-name"><%= blog.createdBy.fullName %></span>
+          <span class="author-name">
+            <% if (blog.createdBy && blog.createdBy.fullName) { %> <%=
+            blog.createdBy.fullName %> <% } else { %> Unknown Author <% } %>
+          </span>
         </div>
       </div>
     </div>
@@ -180,17 +188,20 @@
     <%- include('./partials/scripts') %>
     <script>
       // JavaScript to toggle sidebar on mobile
-      const hamburger = document.querySelector('.hamburger');
-      const sidebar = document.querySelector('.sidebar');
+      const hamburger = document.querySelector(".hamburger");
+      const sidebar = document.querySelector(".sidebar");
 
-      hamburger.addEventListener('click', () => {
-        sidebar.classList.toggle('active');
+      hamburger.addEventListener("click", () => {
+        sidebar.classList.toggle("active");
       });
 
       // Optional: Close sidebar when clicking outside
-      document.addEventListener('click', (event) => {
-        if (!sidebar.contains(event.target) && !hamburger.contains(event.target)) {
-          sidebar.classList.remove('active');
+      document.addEventListener("click", (event) => {
+        if (
+          !sidebar.contains(event.target) &&
+          !hamburger.contains(event.target)
+        ) {
+          sidebar.classList.remove("active");
         }
       });
     </script>

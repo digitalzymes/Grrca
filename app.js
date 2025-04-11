@@ -14,7 +14,7 @@ const blogRoute = require("./routes/blog");
 const {
   checkForAuthenticationCookie,
   ensureAuthenticated,
-  errorHandler
+  errorHandler,
 } = require("./middlewares");
 
 const app = express();
@@ -22,9 +22,9 @@ const PORT = process.env.PORT || 5001;
 
 // MongoDB Connection
 mongoose
-  .connect(process.env.MONGO_URI, {
+  .connect("mongodb+srv://grrcaadmin:cf5CGEe6jTSNlE5F@grrcaadmin.c38gga7.mongodb.net/?retryWrites=true&w=majority&appName=GRRCAAdmin", {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
   })
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.error("MongoDB Connection Error:", err));
@@ -34,13 +34,16 @@ app.set("view engine", "ejs");
 app.set("views", path.resolve("./views"));
 
 // Middleware
-app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:3000',
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.resolve("./public")));
+app.use(express.static(path.resolve("./node_modules"))); // Serve CKEditor
 app.use(cookieParser());
 app.use(checkForAuthenticationCookie("token"));
 
@@ -49,15 +52,17 @@ app.get("/", async (req, res) => {
   let error = null;
   try {
     if (!req.user) return res.redirect("/user/signin");
-    console.log("User object passed to template:", req.user); // Log the user object
-    console.log("Attempting to connect to MongoDB...");
+    console.log("User object passed to template:", req.user);
     const allBlogs = await Blog.find({})
-      .populate("createdBy", "fullName") // Populate only fullName
+      .populate("createdBy", "fullName")
       .sort({ createdAt: -1 });
-    console.log("Fetched blogs with createdBy:", allBlogs.map(blog => ({
-      title: blog.title,
-      createdBy: blog.createdBy ? blog.createdBy._id : "null"
-    }))); // Log blogs and their createdBy
+    console.log(
+      "Fetched blogs with createdBy details:",
+      allBlogs.map((blog) => ({
+        title: blog.title,
+        createdBy: blog.createdBy ? { _id: blog.createdBy._id, fullName: blog.createdBy.fullName } : "null",
+      }))
+    );
     res.render("home", {
       user: req.user,
       blogs: allBlogs,
@@ -76,7 +81,6 @@ app.get("/", async (req, res) => {
     });
   }
 });
-
 // Public API Routes
 app.get("/api/blogs", async (req, res) => {
   try {
@@ -105,7 +109,7 @@ app.get("/api/blogs/:id", async (req, res) => {
 app.use("/user", userRoute);
 app.use("/blog", blogRoute);
 
-// Error Handler (should be last middleware)
+// Error Handler
 app.use(errorHandler);
 
 // Start Server

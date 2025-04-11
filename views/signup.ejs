@@ -139,7 +139,7 @@
   </head>
   <body>
     <!-- Modal -->
-    <div class="modal fade" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
+    <div class="modal fade show d-block" id="signupModal" tabindex="-1" aria-labelledby="signupModalLabel" aria-hidden="true">
       <div class="marquee-container">
         <span class="marquee-text">
           Welcome to Raj Raghunath and Co. - Your Trusted Partner
@@ -151,18 +151,20 @@
             <h5 class="modal-title" id="signupModalLabel">Create an Account</h5>
           </div>
           <div class="modal-body">
-            <% if (typeof error !== "undefined") { %>
-              <div class="alert alert-danger text-center">
+            <!-- Add error display block here -->
+            <% if (typeof error !== 'undefined' && error) { %>
+              <div class="alert alert-danger" role="alert">
                 <%= error %>
               </div>
             <% } %>
             
+            <!--  existing form -->
             <form action="/user/signup" method="POST">
               <div class="mb-3">
                 <label for="fullName" class="form-label">Full Name</label>
                 <input
                   type="text"
-                  name="name"
+                  name="fullName"
                   class="form-control"
                   id="fullName"
                   placeholder="Enter your full name"
@@ -210,23 +212,6 @@
       </div>
     </div>
 
-    <!-- Bootstrap JS and Custom Script -->
     <%- include('./partials/scripts') %>
-    <script>
-      // Show the modal on page load
-      document.addEventListener('DOMContentLoaded', function () {
-        const signupModal = new bootstrap.Modal(document.getElementById('signupModal'));
-        signupModal.show();
-
-        // Focus on the first input field
-        document.getElementById('fullName').focus();
-
-        // Handle form submission success (if needed)
-        document.querySelector('form').addEventListener('submit', function () {
-          // This will be handled by the server, but we can hide the modal on success
-          // Note: This is optimistic; actual success depends on the server response
-        });
-      });
-    </script>
   </body>
 </html>

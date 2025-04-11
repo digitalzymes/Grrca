@@ -82,17 +82,9 @@
             gap: 1rem;
             margin-top: 2rem;
         }
-        .editor-warning {
-            display: none;
-            color: #dc3545;
-            text-align: center;
-            margin-top: 1rem;
-            font-size: 0.9rem;
-        }
     </style>
-    <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
-</head>
-<script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
+<script src="https://cdn.tiny.cloud/1/3u04xmgjti9o8rf0c16ja37y8eba99qslojvenr8vmifqh8j/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+
 </head>
 <body>
     <%- include('./partials/nav') %>
@@ -122,9 +114,6 @@
                     placeholder="Write your amazing content here..." 
                     required
                 ><%= blog.body %></textarea>
-                <div id="editorWarning" class="editor-warning">
-                    CKEditor 5 is not available. Please use <a href="https://docs.google.com/document/" target="_blank">Google Docs</a> or <a href="https://www.microsoft.com/en-us/microsoft-365/word" target="_blank">Microsoft Word</a> to draft your content, then paste it here after the issue is resolved.
-                </div>
             </div>
             <div class="mb-4">
                 <label for="coverImage" class="form-label">Cover Image (Optional)</label>
@@ -136,11 +125,10 @@
                     accept="image/*"
                 >
                 <img 
-                    src="<%= blog.coverImageURL || '/default-image.jpg' %>" 
+                    src="<%= blog.coverImageURL %>" 
                     width="250" 
                     class="current-image" 
-                    alt="Current cover image" 
-                    onerror="this.src='/default-image.jpg'; console.log('Image load failed:', this.src);"
+                    alt="Current cover image"
                 >
             </div>
             <div class="btn-group">
@@ -154,43 +142,64 @@
     <script>
         // Image preview functionality
         const coverImageInput = document.getElementById('coverImage');
-        const imagePreview = document.querySelector('.current-image'); // Use existing image
-        const editorWarning = document.getElementById('editorWarning');
-
+        const imagePreview = document.getElementById('imagePreview');
+  
         coverImageInput.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imagePreview.src = e.target.result;
-                };
-                reader.readAsDataURL(file);
-            }
+          const file = this.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              imagePreview.src = e.target.result;
+              imagePreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+          } else {
+            imagePreview.style.display = 'none';
+          }
         });
-
-        // Initialize CKEditor 5
-        ClassicEditor
-            .create(document.querySelector('#body'))
-            .catch(error => {
-                console.error(error);
-                editorWarning.style.display = 'block';
-            });
-
-        // Form submission
-        const blogForm = document.querySelector('form');
+  
+        // Initialize TinyMCE editor
+        tinymce.init({
+          selector: '#body',
+          height: 200, /* Reduced height for mobile */
+          plugins: [
+            'advlist autolink lists link image charmap print preview anchor',
+            'searchreplace visualblocks code fullscreen',
+            'insertdatetime media table paste code help wordcount'
+          ],
+          toolbar: 'undo redo | formatselect | bold italic backcolor | \
+            alignleft aligncenter alignright alignjustify | \
+            bullist numlist outdent indent | removeformat | help',
+          content_style: 'body { font-family: Arial, sans-serif; font-size: 14px; }',
+          mobile: {
+            theme: 'mobile',
+            plugins: 'autosave lists autolink'
+          }
+        });
+  
+        // Sync TinyMCE content and handle form submission
+        const blogForm = document.getElementById('blogForm');
         blogForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            const title = document.getElementById('title').value.trim();
-            const body = document.getElementById('body').value.trim();
-
-            if (!title || !body) {
-                alert('Please fill in both the title and body fields.');
-                return;
-            }
-
-            console.log('Form Data - Title:', title, 'Body:', body);
-            blogForm.submit();
+          e.preventDefault(); // Prevent default submission for validation
+          tinymce.triggerSave(); // Sync TinyMCE content to textarea
+          const title = document.getElementById('title').value.trim();
+          const body = document.getElementById('body').value.trim();
+  
+          // Validate fields
+          if (!title || !body) {
+            alert('Please fill in both the title and body fields.');
+            return;
+          }
+  
+          console.log('Form Data - Title:', title, 'Body:', body); // Debug log
+          blogForm.submit(); // Submit the form if validation passes
         });
-    </script>
+  
+        // Mobile navigation toggle
+        function toggleNav() {
+          const wrapper = document.querySelector('.wrapper');
+          wrapper.classList.toggle('nav-open');
+        }
+      </script>
 </body>
 </html>

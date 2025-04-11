@@ -11,15 +11,15 @@ function checkForAuthenticationCookie(cookieName) {
       const userPayload = validateToken(tokenCookieValue);
       req.user = userPayload;
     } catch (error) {
-      console.warn("Invalid token:", error.message);
     }
     return next();
   };
 }
 
+// New middleware to enforce login
 function ensureAuthenticated(req, res, next) {
   if (!req.user) {
-    return res.redirect("/user/signin");
+    return res.redirect("/user/signin"); // Redirect to signin if no user
   }
   next();
 }

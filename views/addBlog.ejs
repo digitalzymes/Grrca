@@ -15,7 +15,7 @@
       .wrapper {
         display: flex;
         min-height: 100vh;
-        flex-direction: column; /* Default to column on mobile */
+        flex-direction: column;
       }
       nav {
         width: 250px;
@@ -24,11 +24,11 @@
         background: #f8f9fa;
         padding: 20px;
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease; /* Smooth transition for mobile menu */
+        transition: transform 0.3s ease;
       }
       .main-content {
         flex: 1;
-        margin-left: 250px; /* Match nav width for desktop */
+        margin-left: 250px;
         padding: 20px;
         transition: margin-left 0.3s ease;
       }
@@ -36,10 +36,10 @@
         background: rgba(255, 255, 255, 0.95);
         border-radius: 25px;
         box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
-        padding: 2rem; /* Reduced padding for mobile */
+        padding: 2rem;
         max-width: 900px;
         width: 100%;
-        margin: 20px auto; /* Adjusted margin for mobile */
+        margin: 20px auto;
         animation: fadeIn 0.5s ease-in;
       }
       @keyframes fadeIn {
@@ -50,38 +50,39 @@
         color: #6b48ff;
         font-weight: bold;
         text-align: center;
-        margin-bottom: 1.5rem; /* Reduced margin for mobile */
+        margin-bottom: 1.5rem;
         text-shadow: 2px 2px 8px rgba(107, 72, 255, 0.2);
-        font-size: 1.5rem; /* Reduced font size for mobile */
+        font-size: 1.5rem;
       }
       .form-label {
         color: #333;
         font-weight: 600;
         margin-bottom: 0.5rem;
-        font-size: 1rem; /* Adjusted for mobile */
+        font-size: 1rem;
       }
       .form-control, .form-control-file {
         border-radius: 15px;
         border: 1px solid #e0e0e0;
-        padding: 10px; /* Reduced padding for mobile */
-        font-size: 1rem; /* Adjusted for mobile */
-        width: 100%; /* Ensure full width on mobile */
+        padding: 10px;
+        font-size: 1rem;
+        width: 100%;
       }
       .form-control:focus {
         border-color: #00ddeb;
         box-shadow: 0 0 12px rgba(0, 221, 235, 0.3);
       }
       textarea.form-control {
-        min-height: 150px; /* Reduced height for mobile */
+        min-height: 150px;
         resize: vertical;
+        display: none; /* Hidden, Quill will use a div */
       }
       .btn-primary {
         background: #6b48ff;
         border: none;
         border-radius: 30px;
-        padding: 10px 30px; /* Adjusted padding for mobile */
-        font-size: 1rem; /* Adjusted for mobile */
-        width: 100%; /* Full width on mobile */
+        padding: 10px 30px;
+        font-size: 1rem;
+        width: 100%;
         transition: all 0.3s ease;
       }
       .btn-primary:hover {
@@ -92,7 +93,7 @@
       .btn-group {
         display: flex;
         justify-content: center;
-        margin-top: 1.5rem; /* Reduced margin for mobile */
+        margin-top: 1.5rem;
       }
       .preview-image {
         display: none;
@@ -102,7 +103,13 @@
         margin-top: 1rem;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       }
-      /* Enhanced Mobile Responsiveness */
+      .ql-container {
+        min-height: 200px; /* Match TinyMCE height */
+        border-radius: 15px;
+      }
+      .ql-toolbar {
+        border-radius: 15px 15px 0 0;
+      }
       @media (max-width: 768px) {
         .wrapper {
           flex-direction: column;
@@ -110,13 +117,13 @@
         nav {
           position: absolute;
           top: 0;
-          left: -250px; /* Hide off-screen by default */
+          left: -250px;
           z-index: 1000;
           height: 100%;
-          transform: translateX(0); /* Initial state */
+          transform: translateX(0);
         }
         .nav-open nav {
-          transform: translateX(250px); /* Slide in when open */
+          transform: translateX(250px);
         }
         .main-content {
           margin-left: 0;
@@ -139,7 +146,6 @@
           padding: 8px 20px;
         }
       }
-      /* Hamburger Menu for Mobile */
       .menu-toggle {
         display: none;
         position: fixed;
@@ -159,17 +165,10 @@
           display: block;
         }
       }
-      /* Alternative Editor Warning */
-      .editor-warning {
-        display: none;
-        color: #dc3545;
-        text-align: center;
-        margin-top: 1rem;
-        font-size: 0.9rem;
-      }
     </style>
-    <!-- Include CKEditor 5 CDN -->
-    <script src="https://cdn.ckeditor.com/ckeditor5/41.0.0/classic/ckeditor.js"></script>
+    <!-- Load Quill CSS and JS from CDN for initial testing -->
+    <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
   </head>
   <body>
     <div class="wrapper">
@@ -205,15 +204,8 @@
             </div>
             <div class="mb-4">
               <label for="body" class="form-label">Body</label>
-              <textarea
-                name="body"
-                class="form-control"
-                id="body"
-                placeholder="Share your story here..."
-              ></textarea>
-              <div id="editorWarning" class="editor-warning">
-                CKEditor is not available. Please use <a href="https://docs.google.com/document/" target="_blank">Google Docs</a> or <a href="https://www.microsoft.com/en-us/microsoft-365/word" target="_blank">Microsoft Word</a> to draft your content, then paste it here after the issue is resolved.
-              </div>
+              <div id="editor"></div>
+              <textarea name="body" id="body" class="form-control" style="display:none;"></textarea>
             </div>
             <div class="btn-group">
               <button type="submit" class="btn btn-primary">Publish Blog</button>
@@ -222,14 +214,12 @@
         </div>
       </div>
     </div>
-    <!-- Inline Scripts -->
     <%- include('./partials/scripts.ejs') %>
 
     <script>
       // Image preview functionality
       const coverImageInput = document.getElementById('coverImage');
       const imagePreview = document.getElementById('imagePreview');
-      const editorWarning = document.getElementById('editorWarning');
 
       coverImageInput.addEventListener('change', function() {
         const file = this.files[0];
@@ -245,43 +235,48 @@
         }
       });
 
-      // Initialize CKEditor 5
-      ClassicEditor
-        .create(document.querySelector('#body'), {
-          height: 200, // Matches TinyMCE's height
-          toolbar: [
-            'heading', '|', 'bold', 'italic', 'underline', 'strike',
-            'link', 'imageUpload', 'blockQuote', 'codeBlock',
-            'alignment', 'bulletedList', 'numberedList', 'outdent', 'indent',
-            'undo', 'redo'
-          ],
-          image: {
-            toolbar: ['imageStyle:full', 'imageStyle:side', '|', 'imageTextAlternative']
-          }
-        })
-        .then(editor => {
-          console.log('CKEditor initialized');
-        })
-        .catch(error => {
-          console.error('CKEditor initialization failed:', error);
-          editorWarning.style.display = 'block';
+      // Initialize Quill editor
+      document.addEventListener('DOMContentLoaded', () => {
+        const quill = new Quill('#editor', {
+          theme: 'snow',
+          modules: {
+            toolbar: [
+              [{ header: [1, 2, false] }],
+              ['bold', 'italic', 'underline', 'strike'],
+              ['link', 'image'],
+              [{ list: 'ordered' }, { list: 'bullet' }],
+              ['blockquote', 'code-block'],
+              ['clean']
+            ]
+          },
+          placeholder: 'Share your story here...',
+          readOnly: false
         });
 
-      // Sync CKEditor content and handle form submission
+        window.quill = quill; // Store Quill instance globally
+        console.log('Quill initialized successfully');
+      });
+
+      // Sync Quill content and handle form submission
       const blogForm = document.getElementById('blogForm');
       blogForm.addEventListener('submit', function(e) {
-        e.preventDefault(); // Prevent default submission for validation
+        e.preventDefault();
+        if (window.quill) {
+          document.getElementById('body').value = window.quill.root.innerHTML;
+          console.log('Synced Quill content:', document.getElementById('body').value);
+        } else {
+          console.warn('Quill not initialized');
+        }
         const title = document.getElementById('title').value.trim();
         const body = document.getElementById('body').value.trim();
 
-        // Validate fields
         if (!title || !body) {
           alert('Please fill in both the title and body fields.');
           return;
         }
 
-        console.log('Form Data - Title:', title, 'Body:', body); // Debug log
-        blogForm.submit(); // Submit the form if validation passes
+        console.log('Form Data - Title:', title, 'Body:', body);
+        blogForm.submit();
       });
 
       // Mobile navigation toggle
